@@ -14,7 +14,7 @@ from keras.models import model_from_json
 from pandas import DataFrame
 import pandas as pd
 import pickle
-import os
+#import os
 
 
 #os.system('python lstm_ad_random.py')
@@ -24,16 +24,16 @@ batch_size = 1
 epochs = 10
 attsize = 3
 
-inputs = pickle.load(open('x_att.p'))
-expected_outputs = pickle.load(open('y_att.p'))
+inputs = pickle.load(open('batch_x_att.p'))
+expected_outputs = pickle.load(open('batch_y_att.p'))
 predicted_outputs = 0
 
 test_inps = inputs[2688:]
 test_outs = expected_outputs[2688:]
 
 
-model = model_from_json(open('lstm_inet_dense_ad_random_15min.json').read())
-model.load_weights('lstm_inet_weights_dense_ad_random_15min.h5')
+model = model_from_json(open('lstm_inet_dense_ad_random_15min_batch.json').read())
+model.load_weights('lstm_inet_weights_dense_ad_random_15min_batch.h5')
 
 
 
@@ -98,7 +98,6 @@ d1= {k:[] for k in range(len(test_inps))}
 d2= {k+1:[] for k in range(n)}
 
 corrected_test_outs = []
-#corrected_test_outs.append(0)
 
 corrected_test_outs.extend(test_outs)
 
@@ -125,12 +124,12 @@ for i in range(1):
 plt.plot(range(len(corrected_test_outs)),corrected_test_outs,label='Expected')
 plt.plot(range(len(d2[2])),d2[2],label='Predicted')
 plt.legend(loc='best')
-plt.title('Expected vs Predicted Attach Rates for Test Week')
+plt.title('Expected vs Predicted Attach Rates for Test Week (Batch)')
 plt.xlabel('Time Step')
 plt.ylabel('Attach Rate')
 plt.show()
 
-#plt.savefig('LSTM_12_ts_10_epch_mon.png')
+#plt.savefig('LSTM_12_ts_10_epch_batch_mon.png')
 
 
 

@@ -1,4 +1,11 @@
 # -*- coding: utf-8 -*-
+"""
+Created on Thu Feb 25 10:43:33 2016
+
+@author: suraj
+"""
+
+# -*- coding: utf-8 -*-
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -17,8 +24,8 @@ batch_size = 1
 epochs = 10
 attsize = 3
 
-inputs = pickle.load(open('x_att.p'))
-expected_outputs = pickle.load(open('y_att.p'))
+inputs = pickle.load(open('batch_x_att.p'))
+expected_outputs = pickle.load(open('batch_y_att.p'))
 predicted_outputs = 0
 
 train_inps = inputs[:2688]
@@ -36,12 +43,12 @@ print "Network Built Sucessfully"
 print "Training"
 for j in range(epochs):
     for i in range(len(train_inps)):
-        model.fit(np.array([train_inps[i]]), np.array([train_outs[i]]),verbose=1,nb_epoch=j)
+        model.fit(np.array([train_inps[i]])  , np.array([train_outs[i]]), batch_size=batch_size,verbose=1,nb_epoch=j)
 
 
 print "Finished Training"
 
 
-open('lstm_inet_dense_ad_random_15min.json','w').write(model.to_json())
-model.save_weights('lstm_inet_weights_dense_ad_random_15min.h5')
+open('lstm_inet_dense_ad_random_15min_batch.json','w').write(model.to_json())
+model.save_weights('lstm_inet_weights_dense_ad_random_15min_batch.h5')
 
