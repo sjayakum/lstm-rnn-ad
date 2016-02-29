@@ -92,6 +92,21 @@ def predict_n_further(index, n, inp, model, batch_size=1):
             next_inp = ohe_predicted_value(next_inp,pred[0][0])
         d1[index].append(pred[0][0])
 
+
+def get_time(ts):
+    '''
+        get time given timestep
+    '''
+    tot_minutes = ts*15
+    hrs = tot_minutes/60
+    minutes = tot_minutes - hrs*60
+    if hrs == 24:
+        hrs ='00'
+    if minutes == 0:
+        minutes = '00'
+    time = str(hrs) + ':' + str(minutes)
+    return time
+
 n = 8
 
 d1= {k:[] for k in range(len(test_inps))}
@@ -110,7 +125,32 @@ for i in range(len(test_inps)):
     predict_n_further(i, n,np.array([test_inps[i]]), model, batch_size=1)
   
 df = DataFrame(d1)
-print df
+# print df
+
+shift_count = 0
+
+cols = ['']
+for t in range(96):
+    cols.append(get_time(t))
+
+rows = []
+for k in d1.keys()[:88]:
+    l = [get_time(k%96)]
+    for j in range(shift_count):
+        l.append(0.0)
+    l.append(test_inps[k][k%12][2])
+    l.extend(d1[k])
+    l.extend([0.]*(97-len(l)))
+    if k%96 != 0:
+        shift_count += 1
+    else:
+        shift_count = 0
+    rows.append(l)
+
+rows = np.array(rows)
+# pickle.dump(rows,open('df.p','wb'))
+df2 = pd.DataFrame(rows[0:,1:],index=rows[0:,0], columns=cols[1:])
+df2.to_csv(path_or_buf=open('df.csv','w'))
 
 '''
 plt.subplot(2, 1, 1)
