@@ -79,8 +79,8 @@ plt.plot(np.array(plotting_list3[96:200]))
 plt.show()
 
 
-pickle.dump(x_attributes,open('x_att.p','wb'))
-pickle.dump(y_attributes,open('y_att.p','wb'))
+#pickle.dump(x_attributes,open('x_att.p','wb'))
+#pickle.dump(y_attributes,open('y_att.p','wb'))
 
 
 

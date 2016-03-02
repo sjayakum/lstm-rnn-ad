@@ -1,0 +1,20 @@
+Traceback (most recent call last):
+  File "/usr/lib/python2.7/site-packages/spyderlib/spyder.py", line 2331, in main
+    mainwindow = run_spyder(app, options, args)
+  File "/usr/lib/python2.7/site-packages/spyderlib/spyder.py", line 2215, in run_spyder
+    main.setup()
+  File "/usr/lib/python2.7/site-packages/spyderlib/spyder.py", line 768, in setup
+    self.editor = Editor(self)
+  File "/usr/lib/python2.7/site-packages/spyderlib/plugins/editor.py", line 448, in __init__
+    self.load(filenames)
+  File "/usr/lib/python2.7/site-packages/spyderlib/plugins/editor.py", line 1697, in load
+    finfo = self.editorstacks[0].load(filename, set_current=False)
+  File "/usr/lib/python2.7/site-packages/spyderlib/widgets/editor.py", line 1813, in load
+    finfo = self.create_new_editor(filename, enc, text, set_current)
+  File "/usr/lib/python2.7/site-packages/spyderlib/widgets/editor.py", line 1726, in create_new_editor
+    cloned_from=cloned_from)
+  File "/usr/lib/python2.7/site-packages/spyderlib/widgets/sourcecode/codeeditor.py", line 620, in setup_editor
+    self.set_language(language)
+  File "/usr/lib/python2.7/site-packages/spyderlib/widgets/sourcecode/codeeditor.py", line 714, in set_language
+    sh_class, comment_string, CFMatch = self.LANGUAGES[key]
+KeyError: 'Json'

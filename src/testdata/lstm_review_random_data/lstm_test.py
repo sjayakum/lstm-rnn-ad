@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 """
-Created on Tue Feb 23 14:28:22 2016
+Created on Wed Mar  2 10:29:59 2016
 
 @author: suraj
 """
+
 import numpy as np
 import matplotlib.pyplot as plt
 from keras.models import Sequential
@@ -14,7 +15,7 @@ from keras.models import model_from_json
 from pandas import DataFrame
 import pandas as pd
 import pickle
-#import os
+import os
 
 
 #os.system('python lstm_ad_random.py')
@@ -24,18 +25,19 @@ batch_size = 1
 epochs = 10
 attsize = 3
 
-inputs = pickle.load(open('batch_x_att.p'))
-expected_outputs = pickle.load(open('batch_y_att.p'))
+inputs = pickle.load(open('test_x_att.p'))
+expected_outputs = pickle.load(open('text_y_att.p'))
 predicted_outputs = 0
 
-test_inps = inputs[2688:]
-test_outs = expected_outputs[2688:]
+test_inps = inputs
+test_outs = expected_outputs
 
 
-model = model_from_json(open('lstm_inet_dense_ad_random_15min_batch.json').read())
-model.load_weights('lstm_inet_weights_dense_ad_random_15min_batch.h5')
+model = model_from_json(open('lstm_review_random_15min.json').read())
+model.load_weights('lstm_review_random_15min.h5')
 
-
+# from keras.utils.visualize_util import plot
+# plot(model, to_file='model.png')
 
 
 def ohe_predicted_value(previous_input, value, ):
@@ -92,27 +94,13 @@ def predict_n_further(index, n, inp, model, batch_size=1):
             next_inp = ohe_predicted_value(next_inp,pred[0][0])
         d1[index].append(pred[0][0])
 
-
-def get_time(ts):
-    '''
-        get time given timestep
-    '''
-    tot_minutes = ts*15
-    hrs = tot_minutes/60
-    minutes = tot_minutes - hrs*60
-    if hrs == 24:
-        hrs ='00'
-    if minutes == 0:
-        minutes = '00'
-    time = str(hrs) + ':' + str(minutes)
-    return time
-
 n = 8
 
 d1= {k:[] for k in range(len(test_inps))}
 d2= {k+1:[] for k in range(n)}
 
 corrected_test_outs = []
+#corrected_test_outs.append(0)
 
 corrected_test_outs.extend(test_outs)
 
@@ -123,53 +111,64 @@ preds2 = []
 for i in range(len(test_inps)):
    
     predict_n_further(i, n,np.array([test_inps[i]]), model, batch_size=1)
-  
+
+print len(test_outs)
+
+scores = model.evaluate(test_inps, test_outs, show_accuracy=True, verbose=0, batch_size=1)
+print('RNN test score:', scores[0])
+
 df = DataFrame(d1)
-# print df
 
-shift_count = 0
 
-cols = ['']
-for t in range(96):
-    cols.append(get_time(t))
+#import pdb; pdb.set_trace()
+print len(d2[1]), len(test_outs)
 
-rows = []
-for k in d1.keys()[:88]:
-    l = [get_time(k%96)]
-    for j in range(shift_count):
-        l.append(0.0)
-    l.append(test_inps[k][k%12][2])
-    l.extend(d1[k])
-    l.extend([0.]*(97-len(l)))
-    if k%96 != 0:
-        shift_count += 1
+
+errors_full = [(test_outs[i] - d2[1][i]) for i in range(len(test_outs)) ]
+errors = errors_full[200:500]
+print 'avg : ',sum(errors_full)/float(len(errors_full))
+print 'max error :  ', max(errors_full)
+print 'min error : ',min(errors_full)
+
+print 'avg : ',sum(d2[1])/float(len(d2[1]))
+print 'max pred : ', max(d2[1])
+print 'min pred : ', min(d2[1])
+
+print "*****************  Anomalies  **************************"
+actual_anomalies = []
+pred_anomalies = []
+for i in range(len(test_inps[200:500])):
+    if test_inps[i][i%12][2]*6. >= 6.6:
+        print 200+i, test_inps[i][i%12][2]*6, d2[1][i]*6
+        actual_anomalies.append(test_inps[i][i%12][2]*6)
+        pred_anomalies.append(d2[1][i]*6)
     else:
-        shift_count = 0
-    rows.append(l)
-
-rows = np.array(rows)
-# pickle.dump(rows,open('df.p','wb'))
-df2 = pd.DataFrame(rows[0:,1:],index=rows[0:,0], columns=cols[1:])
-df2.to_csv(path_or_buf=open('df.csv','w'))
+        actual_anomalies.append(0)
+        pred_anomalies.append(0)
 
 
-plt.subplot(9, 1, 1)
-plt.plot(corrected_test_outs)
-plt.title('Expected')
-for i in range(8):
-    plt.subplot(9, 1, i+2)
-    plt.plot(np.array(d2[i+1]))
-    plt.title('Predicted ' + str(i+1))
 
-#plt.plot(range(len(corrected_test_outs)),corrected_test_outs,label='Expected')
-#plt.plot(range(len(d2[2])),d2[2],label='Predicted')
-#plt.legend(loc='best')
-#plt.title('Expected vs Predicted Attach Rates for Test Week (Batch)')
-#plt.xlabel('Time Step')
-#plt.ylabel('Attach Rate')
-#plt.show()
-#
-##plt.savefig('LSTM_12_ts_10_epch_batch_mon.png')
+print "*******************   Non-Anomalies   *********************************"
 
 
+for i in range(len(test_inps[200:500])):
+    if test_inps[i][i%12][2]*6. <= 6.6:
+        print 200+i, test_inps[i][i%12][2]*6, d2[1][i]*6
+
+
+plt.subplot(3,1,1)
+plt.bar(range(len(test_outs[200:500])),test_outs[200:500],label='Expected',color='#F4561D')
+plt.bar(range(len(test_outs[200:500])),d2[1][200:500],label='Predicted',color='#F1BD1A')
+plt.legend(('Expected', 'Predicted'), loc='best')
+plt.title('Expected vs Predicted')
+
+plt.subplot(3,1,2)
+plt.plot(range(len(errors)),errors, 'o-', label='error')
+
+plt.subplot(3,1,3)
+plt.bar(range(len(test_outs[200:500])),actual_anomalies,label='Expected',color='#F4561D')
+plt.bar(range(len(test_outs[200:500])),pred_anomalies,label='Predicted',color='#F1BD1A')
+plt.legend(('Expected', 'Predicted'), loc='best')
+plt.title('Expected vs Predicted Anomalies')
+plt.show()
 

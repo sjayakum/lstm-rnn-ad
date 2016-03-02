@@ -28,14 +28,15 @@ inputs = pickle.load(open('x_att.p'))
 expected_outputs = pickle.load(open('y_att.p'))
 predicted_outputs = 0
 
-test_inps = inputs[2688:]
-test_outs = expected_outputs[2688:]
+test_inps = inputs[2688:2688+96]
+test_outs = expected_outputs[2688:2688+96]
 
 
 model = model_from_json(open('lstm_inet_dense_ad_random_15min.json').read())
 model.load_weights('lstm_inet_weights_dense_ad_random_15min.h5')
 
-
+from keras.utils.visualize_util import plot
+plot(model, to_file='model.png')
 
 
 def ohe_predicted_value(previous_input, value, ):
@@ -113,24 +114,13 @@ for i in range(len(test_inps)):
 df = DataFrame(d1)
 print df
 
-'''
-plt.subplot(2, 1, 1)
-plt.plot(corrected_test_outs)
-plt.title('Expected')
-for i in range(1):
-    plt.subplot(2, 1, i+2)
-    plt.plot(np.array(d2[i+1]))
-    plt.title('Predicted ' + str(i+1))
-'''
-plt.plot(range(len(corrected_test_outs)),corrected_test_outs,label='Expected')
-plt.plot(range(len(d2[2])),d2[2],label='Predicted')
-plt.legend(loc='best')
-plt.title('Expected vs Predicted Attach Rates for Test Week')
-plt.xlabel('Time Step')
-plt.ylabel('Attach Rate')
+#import pdb; pdb.set_trace()
+print len(d2[1]), len(corrected_test_outs)
+plt.bar(range(len(corrected_test_outs)),d2[1],label='Predicted',color='#F1BD1A')
+plt.bar(range(len(corrected_test_outs)),corrected_test_outs,label='Expected',color='#F4561D')
+
+plt.legend(('Expected', 'Predicted'), loc='best')
+plt.title('Survivors by Family Size')
+
 plt.show()
-
-#plt.savefig('LSTM_12_ts_10_epch_mon.png')
-
-
 
