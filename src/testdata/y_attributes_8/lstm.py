@@ -24,7 +24,7 @@ from keras.layers.core import TimeDistributedMerge
 # CONSTANTS
 tsteps = 12
 batch_size = 1
-epochs = 15
+epochs = 10
 attsize = 3
 
 inputs = pickle.load(open('x_att.p'))
@@ -61,6 +61,6 @@ for j in range(epochs):
 print "Finished Training"
 
 
-open('lstm_y_8.json','w').write(model.to_json())
-model.save_weights('lstm_y_8_weights.h5')
+open('lstm_y_8_10epch.json','w').write(model.to_json())
+model.save_weights('lstm_y_8_10epch_weights.h5')
 
