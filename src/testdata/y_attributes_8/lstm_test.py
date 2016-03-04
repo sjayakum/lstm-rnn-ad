@@ -1,0 +1,95 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Thu Mar  3 14:13:20 2016
+
+@author: suraj
+"""
+
+
+import numpy as np
+import matplotlib.pyplot as plt
+from keras.models import Sequential
+from keras.layers.core import Dense
+from keras.layers.recurrent import LSTM
+from keras.models import Graph
+from keras.models import model_from_json
+from pandas import DataFrame
+import pandas as pd
+import pickle
+import os
+
+#os.system('python lstm_ad_random.py')
+# CONSTANTS
+tsteps = 12
+batch_size = 1
+epochs = 10
+attsize = 3
+k = 0
+
+inputs = pickle.load(open('test_x_att.p'))
+expected_outputs = pickle.load(open('test_y_att.p'))
+predicted_outputs =  np.zeros((672,8))
+
+test_inps = inputs
+test_outs = expected_outputs
+
+
+model = model_from_json(open('lstm_y_8.json').read())
+model.load_weights('lstm_y_8_weights.h5')
+
+scores = model.evaluate(test_inps,test_outs, show_accuracy=True, verbose=1, batch_size=1)
+print('RNN test score:', scores[0])
+
+for i in range(672):
+    predicted_outputs[i] = model.predict(np.array([test_inps[i]]), verbose=1, batch_size=1)
+    
+preds = [out[k] for out in predicted_outputs[200:250]]
+
+errors_full = [(test_outs[i][k] - predicted_outputs[i][k]) for i in range(672) ]
+errors = errors_full[200:250]
+print 'avg : ',sum(errors_full)/float(len(errors_full))
+print 'max error :  ', max(errors_full)
+print 'min error : ',min(errors_full)
+
+print 'avg : ',sum(preds)/float(len(preds))
+print 'max pred : ', max(preds)
+print 'min pred : ', min(preds)
+
+print "*****************  Anomalies  **************************"
+actual_anomalies = []
+pred_anomalies = []
+for i in range(len(test_inps[200:250])):
+    if test_inps[i][i%12][2]*6. >= 6.6:
+        print 200+i, test_inps[i][i%12][2]*6, preds[i]*6
+        actual_anomalies.append(test_inps[i][i%12][2]*6)
+        pred_anomalies.append(preds[i]*6)
+    else:
+        actual_anomalies.append(0)
+        pred_anomalies.append(0)
+
+
+
+print "*******************   Non-Anomalies   *********************************"
+
+
+for i in range(len(test_inps[200:250])):
+    if test_inps[i][i%12][2]*6. <= 6.6:
+        print 200+i, test_inps[i][i%12][2]*6, preds[i]*6
+
+test_outs_first_val = [out[k] for out in test_outs]
+plt.subplot(3,1,1)
+plt.bar(range(len(test_outs_first_val[200:250])),test_outs_first_val[200:250],label='Expected',color='#F4561D')
+plt.bar(range(len(test_outs_first_val[200:250])),preds,label='Predicted',color='#F1BD1A')
+plt.legend(('Expected', 'Predicted'), loc='best')
+plt.title('Expected vs Predicted')
+
+plt.subplot(3,1,2)
+plt.plot(range(len(errors)),errors, 'o-', label='error')
+
+plt.subplot(3,1,3)
+plt.bar(range(len(test_outs_first_val[200:250])),actual_anomalies,label='Expected',color='#F4561D')
+plt.bar(range(len(test_outs_first_val[200:250])),pred_anomalies,label='Predicted',color='#F1BD1A')
+plt.legend(('Expected', 'Predicted'), loc='best')
+plt.title('Expected vs Predicted Anomalies')
+plt.show()
+
