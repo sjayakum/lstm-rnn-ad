@@ -1,11 +1,5 @@
 # -*- coding: utf-8 -*-
-"""
-Created on Thu Mar  3 14:13:20 2016
-
-@author: suraj
-"""
-
-
+# -*- coding: utf-8 -*-
 import numpy as np
 import matplotlib.pyplot as plt
 from keras.models import Sequential
@@ -20,32 +14,32 @@ import os
 
 #os.system('python lstm_ad_random.py')
 # CONSTANTS
-tsteps = 12
+tsteps = 24
 batch_size = 1
 epochs = 10
-attsize = 3
+attsize = 2
 k = 0
 
-inputs = pickle.load(open('test_x_att.p'))
-expected_outputs = pickle.load(open('test_y_att.p'))
-predicted_outputs =  np.zeros((672,8))
+inputs = pickle.load(open('X.p'))
+expected_outputs = pickle.load(open('y.p'))
+predicted_outputs =  np.zeros((len(inputs[720:]),8))
 
-test_inps = inputs
-test_outs = expected_outputs
+test_inps = inputs[720:]
+test_outs = expected_outputs[720:]
 
 
-model = model_from_json(open('lstm_y_8_10epch.json').read())
-model.load_weights('lstm_y_8_10epch_weights.h5')
+model = model_from_json(open('lstm_y_8_inet.json').read())
+model.load_weights('lstm_y_8_inet_weights.h5')
 
 scores = model.evaluate(test_inps,test_outs, show_accuracy=True, verbose=1, batch_size=1)
 print('RNN test score:', scores[0])
 
-for i in range(672):
+for i in range(len(inputs[720:])):
     predicted_outputs[i] = model.predict(np.array([test_inps[i]]), verbose=1, batch_size=1)
     
 preds = [out[k] for out in predicted_outputs[200:250]]
 
-errors_full = [(test_outs[i][k] - predicted_outputs[i][k]) for i in range(672) ]
+errors_full = [(test_outs[i][k] - predicted_outputs[i][k]) for i in range(len(inputs[720:])) ]
 errors = errors_full[200:250]
 print 'avg : ',sum(errors_full)/float(len(errors_full))
 print 'max error :  ', max(errors_full)
@@ -59,10 +53,10 @@ print "*****************  Anomalies  **************************"
 actual_anomalies = []
 pred_anomalies = []
 for i in range(len(test_inps[200:250])):
-    if test_inps[i][i%12][2]*6. >= 6.6:
-        print 200+i, test_inps[i][i%12][2]*6, preds[i]*6
-        actual_anomalies.append(test_inps[i][i%12][2]*6)
-        pred_anomalies.append(preds[i]*6)
+    if test_inps[i][i%12][1]*9. >= 9.:
+        print 200+i, test_inps[i][i%12][1]*9., preds[i]*9.
+        actual_anomalies.append(test_inps[i][i%12][1]*9.)
+        pred_anomalies.append(preds[i]*9.)
     else:
         actual_anomalies.append(0)
         pred_anomalies.append(0)
@@ -73,32 +67,27 @@ print "*******************   Non-Anomalies   *********************************"
 
 
 for i in range(len(test_inps[200:250])):
-    if test_inps[i][i%12][2]*6. <= 6.6:
-        print 200+i, test_inps[i][i%12][2]*6, preds[i]*6
+    if test_inps[i][i%12][1]*9. <= 9.:
+        print 200+i, test_inps[i][i%12][1]*9., preds[i]*9.
 
-
-
-print "*****************************************"
-print [o*6. for o in predicted_outputs[229]]
-suma = 0
-for a in range(221,229):
-    test_number = (a+3)%8
-    suma += predicted_outputs[a][7-test_number]
-print float(suma)/8.
 test_outs_first_val = [out[k] for out in test_outs]
+'''
 plt.subplot(3,1,1)
+
 plt.bar(range(len(test_outs_first_val[200:250])),test_outs_first_val[200:250],label='Expected',color='#F4561D')
 plt.bar(range(len(test_outs_first_val[200:250])),preds,label='Predicted',color='#F1BD1A')
+
 plt.legend(('Expected', 'Predicted'), loc='best')
 plt.title('Expected vs Predicted')
+'''
 
-plt.subplot(3,1,2)
-plt.plot(range(len(errors)),errors, 'o-', label='error')
 
-plt.subplot(3,1,3)
-plt.bar(range(len(test_outs_first_val[200:250])),actual_anomalies,label='Expected',color='#F4561D')
-plt.bar(range(len(test_outs_first_val[200:250])),pred_anomalies,label='Predicted',color='#F1BD1A')
-plt.legend(('Expected', 'Predicted'), loc='best')
-plt.title('Expected vs Predicted Anomalies')
+for k in range(8):
+    plt.subplot(8,1,1+k)
+    errors_full = [(test_outs[i][k] - predicted_outputs[i][k]) for i in range(len(inputs[720:])) ]
+    plt.plot(range(len(errors)),errors_full[200:250], 'o-', label='error')
+    
+
 plt.show()
+
 

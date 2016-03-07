@@ -30,6 +30,8 @@ test_x_attributes = np.zeros((672,12,3))
 test_y_attributes = np.zeros((672,8))
 online_x_attributes = np.zeros((672,12,3))
 online_y_attributes = np.zeros((672,8))
+test_online_x_attributes = np.zeros((672,12,3))
+test_online_y_attributes = np.zeros((672,8))
 
 plotting_list1 = []
 plotting_list2 = []
@@ -37,7 +39,8 @@ plotting_list3 = []
 plotting_list4 = []
 plotting_list5 = []
 plotting_list6 = []
-
+plotting_list7 = []
+'''
 for i in range(672):
     place_to_insert_data = i%12
     #Create temp array
@@ -164,19 +167,62 @@ for i in range(672):
     online_y_attributes[i] = float(online_attach_rate_list[(i+1)%672])/9.
     #just for plotting
     plotting_list6.append(float(online_attach_rate_list[i])/9.)
+'''
+#GENERATE TEST DATA FOR ONLINE LEARNING
     
-plt.subplot(6, 1, 1)
+for i in range(672):
+    place_to_insert_data = i%12
+    #Create temp array
+    assign_array = []
+    day_number = i%7
+    time_number= i%96
+    assign_array.append(float(day_number)/6.)
+    assign_array.append(float(time_number)/96.)
+    
+    plus_minus_prob = random.random()
+    anomaly_prob = random.random()    
+    if(plus_minus_prob<0.65):
+        assign_array.append((float(online_attach_rate_list[(i%672)])/9.)+(-1)*random.uniform(0.05,0.09))
+        plotting_list7.append((float(online_attach_rate_list[(i%672)])/9.)+(-1)*random.uniform(0.05,0.09))
+    else:
+        assign_array.append((float(online_attach_rate_list[(i%672)])/9.)+random.uniform(0.05,0.09))
+        plotting_list7.append((float(online_attach_rate_list[(i%672)])/9.)+random.uniform(0.05,0.09))
+        
+            
+    #assign it  to x-attributes & y-attributes
+    test_online_x_attributes[i][place_to_insert_data] = assign_array
+    
+    
+    
+    
+
+for i in range(672):
+    for k in range(8):
+        test_online_y_attributes[i][k] = test_online_x_attributes[(i+k+1)%672][(i+k+1)%24][1]
+        
+        
+for i in range(672):
+    place_to_insert_data = i%12
+    prob_var = random.random()
+    if(prob_var>0.95):
+        test_online_x_attributes[i][place_to_insert_data][2] = random.uniform(10,12)/9.
+        pass    
+
+    
+plt.subplot(7, 1, 1)
 plt.plot(np.array(plotting_list1))
-plt.subplot(6, 1, 2)
+plt.subplot(7, 1, 2)
 plt.plot(np.array(plotting_list2))
-plt.subplot(6, 1, 3)
+plt.subplot(7, 1, 3)
 plt.plot(np.array(plotting_list3))
-plt.subplot(6, 1, 4)
+plt.subplot(7, 1, 4)
 plt.plot(np.array(plotting_list4))
-plt.subplot(6, 1, 5)
+plt.subplot(7, 1, 5)
 plt.plot(np.array(plotting_list5))
-plt.subplot(6, 1, 6)
+plt.subplot(7, 1, 6)
 plt.plot(np.array(plotting_list6))
+plt.subplot(7, 1, 7)
+plt.plot(np.array(plotting_list7))
 plt.show()
 
 #
@@ -187,5 +233,8 @@ plt.show()
 #pickle.dump(test_y_attributes,open('test_y_att.p','wb'))
 
 
-pickle.dump(online_x_attributes, open('online_x_att.p','wb'))
-pickle.dump(online_y_attributes, open('online_y_att.p','wb'))
+#pickle.dump(online_x_attributes, open('online_x_att.p','wb'))
+#pickle.dump(online_y_attributes, open('online_y_att.p','wb'))
+
+pickle.dump(test_online_x_attributes, open('test_online_x_att.p','wb'))
+pickle.dump(test_online_y_attributes, open('test_online_y_att.p','wb'))

@@ -1,11 +1,4 @@
 # -*- coding: utf-8 -*-
-"""
-Created on Thu Mar  3 14:13:20 2016
-
-@author: suraj
-"""
-
-
 import numpy as np
 import matplotlib.pyplot as plt
 from keras.models import Sequential
@@ -26,16 +19,16 @@ epochs = 10
 attsize = 3
 k = 0
 
-inputs = pickle.load(open('test_x_att.p'))
-expected_outputs = pickle.load(open('test_y_att.p'))
+inputs = pickle.load(open('test_online_x_att.p'))
+expected_outputs = pickle.load(open('test_online_y_att.p'))
 predicted_outputs =  np.zeros((672,8))
 
 test_inps = inputs
 test_outs = expected_outputs
 
 
-model = model_from_json(open('lstm_y_8_10epch.json').read())
-model.load_weights('lstm_y_8_10epch_weights.h5')
+model = model_from_json(open('lstm_y_8_online.json').read())
+model.load_weights('lstm_y_8_online_weights.h5')
 
 scores = model.evaluate(test_inps,test_outs, show_accuracy=True, verbose=1, batch_size=1)
 print('RNN test score:', scores[0])
@@ -59,10 +52,10 @@ print "*****************  Anomalies  **************************"
 actual_anomalies = []
 pred_anomalies = []
 for i in range(len(test_inps[200:250])):
-    if test_inps[i][i%12][2]*6. >= 6.6:
-        print 200+i, test_inps[i][i%12][2]*6, preds[i]*6
-        actual_anomalies.append(test_inps[i][i%12][2]*6)
-        pred_anomalies.append(preds[i]*6)
+    if test_inps[i][i%12][2]*9. >= 9.:
+        print 200+i, test_inps[i][i%12][2]*9., preds[i]*9.
+        actual_anomalies.append(test_inps[i][i%12][2]*9.)
+        pred_anomalies.append(preds[i]*9.)
     else:
         actual_anomalies.append(0)
         pred_anomalies.append(0)
@@ -73,22 +66,15 @@ print "*******************   Non-Anomalies   *********************************"
 
 
 for i in range(len(test_inps[200:250])):
-    if test_inps[i][i%12][2]*6. <= 6.6:
-        print 200+i, test_inps[i][i%12][2]*6, preds[i]*6
+    if test_inps[i][i%12][2]*9. <= 9.:
+        print 200+i, test_inps[i][i%12][2]*9., preds[i]*9.
 
-
-
-print "*****************************************"
-print [o*6. for o in predicted_outputs[229]]
-suma = 0
-for a in range(221,229):
-    test_number = (a+3)%8
-    suma += predicted_outputs[a][7-test_number]
-print float(suma)/8.
 test_outs_first_val = [out[k] for out in test_outs]
 plt.subplot(3,1,1)
+
 plt.bar(range(len(test_outs_first_val[200:250])),test_outs_first_val[200:250],label='Expected',color='#F4561D')
 plt.bar(range(len(test_outs_first_val[200:250])),preds,label='Predicted',color='#F1BD1A')
+
 plt.legend(('Expected', 'Predicted'), loc='best')
 plt.title('Expected vs Predicted')
 

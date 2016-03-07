@@ -26,7 +26,7 @@ epochs = 10
 attsize = 3
 
 inputs = pickle.load(open('test_x_att.p'))
-expected_outputs = pickle.load(open('text_y_att.p'))
+expected_outputs = pickle.load(open('test_y_att.p'))
 predicted_outputs = 0
 
 test_inps = inputs
